@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Outpost Zero: Moon Base Adventure</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="booting">
+  <div id="stage">
+    <canvas id="game" aria-label="The Moon base game world"></canvas>
+
+    <!-- ===== HUD: small icon meters, like a video game ===== -->
+    <div id="hud" class="hidden">
+      <div id="hud-left">
+        <div id="clock" class="chip">☀️ Day 1 · 6:00 AM</div>
+        <div id="stars" class="chip" title="Science points: you get them for finishing missions">⭐ 0</div>
+        <div class="gauge" id="g-energy"><span class="gi">⚡</span><div class="gbar"><i></i></div><b class="gv"></b></div>
+        <div class="gauge" id="g-air"><span class="gi">💨</span><div class="gbar"><i></i></div><b class="gv"></b></div>
+        <div class="gauge hidden" id="g-rad"><span class="gi">☢️</span><div class="gbar"><i></i></div><b class="gv"></b></div>
+      </div>
+      <div id="hud-right">
+        <div class="gauge" id="g-battery"><span class="gi">🔋</span><div class="gbar"><i></i></div><b class="gv"></b></div>
+        <div id="power-rate" class="chip">⚡ –</div>
+        <div id="where" class="chip">🌕 Home Base</div>
+        <canvas id="minimap" width="168" height="120" aria-label="Map of where you are"></canvas>
+        <div id="bag" class="chip">🎒 –</div>
+        <div id="rescues" class="chip" title="Times Zorp can still rescue you (fainting or running out of power uses one)">👽 ×3</div>
+        <div class="hud-buttons">
+          <button id="btn-sound" class="tiny" aria-label="Sound on or off">🔊</button>
+          <button id="btn-help" class="tiny" aria-label="Help">?</button>
+          <button id="btn-end" class="tiny hidden" aria-label="End mission">🏁</button>
+        </div>
+      </div>
+      <div id="missions" class="chip hidden"></div>
+    </div>
+
+    <!-- ===== Things that float over the world ===== -->
+    <div id="floaters">
+      <div id="bolt-say" class="say hidden"></div>
+      <div id="prompt" class="prompt hidden"></div>
+      <div id="arrow" class="arrow hidden"><div class="ar">▼</div><div class="al"></div></div>
+      <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <!-- ===== Touch controls (shown on tablets and phones) ===== -->
+    <div id="touch" class="hidden">
+      <div class="dpad">
+        <button data-k="up" aria-label="Up">▲</button>
+        <button data-k="left" aria-label="Left">◀</button>
+        <button data-k="right" aria-label="Right">▶</button>
+        <button data-k="down" aria-label="Down">▼</button>
+      </div>
+      <button id="touch-act" class="act" aria-label="Action">E</button>
+      <button id="touch-jump" class="jump" aria-label="Jump">⤒</button>
+    </div>
+
+    <!-- ===== Title screen ===== -->
+    <div id="title" class="screen">
+      <div class="title-box">
+        <div class="sub">A NASA-data adventure</div>
+        <h1>Outpost Zero</h1>
+        <p class="tag">Explore the Moon. Keep your base alive.<br>Learn what real astronauts must balance.</p>
+        <p id="data-status" class="data-status" role="status">Checking NASA for real solar flares…</p>
+        <div class="planets"><button id="pl-moon" class="big alt on">🌕 Moon</button><button id="pl-mars" class="big alt">🔴 Mars</button></div>
+        <div class="btn-col">
+          <button id="btn-short" class="big" disabled>▶ 5 days</button>
+          <button id="btn-full" class="big alt" disabled>▶ 7 days</button>
+          <button id="btn-endless" class="big alt" disabled>▶ ∞ Infinite days</button>
+          <button id="btn-howto" class="big ghost">🎮 How to play</button>
+          <button id="btn-demo" class="tbtn demo" disabled title="Jump straight to a solar flare">⚡ Judge demo: skip to a solar flare</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Story ===== -->
+    <div id="story" class="screen hidden"></div>
+
+    <!-- ===== Opening film ===== -->
+    <div id="film" class="hidden">
+      <canvas id="film-cv" width="960" height="540"></canvas>
+      <div id="film-cap" class="hidden"></div>
+      <div id="film-src">Source: NASA Artemis I mission timeline · a simplified story</div>
+      <button id="film-skip" class="big alt">Skip ▶</button>
+    </div>
+
+    <!-- ===== Black fade (rover trips) ===== -->
+    <div id="fade" class="hidden"></div>
+
+    <!-- ===== Machine panel ===== -->
+    <div id="panel" class="modal hidden"></div>
+
+    <!-- ===== Earth computer ===== -->
+    <div id="terminal" class="modal hidden"></div>
+
+    <!-- ===== Discovery card ===== -->
+    <div id="card" class="modal hidden"></div>
+
+    <div id="pause" class="modal hidden"></div>
+
+    <!-- ===== Help ===== -->
+    <div id="help" class="modal hidden">
+      <div class="win">
+        <h2>🎮 How to play</h2>
+        <ul class="helplist">
+          <li><b>Move:</b> arrow keys or W A S D</li>
+          <li><b>Use / pick up / continue:</b> press E (or Enter)</li>
+          <li><b>Menus:</b> arrow keys to choose, E to press</li>
+          <li><b>Jump:</b> Space, only outside the base bubble</li>
+          <li><b>Pause menu:</b> press Esc</li>
+          <li>🚙 <b>Rover:</b> stand by it and press Q to drive (E = fast travel, Q = get out)</li>
+          <li>⛰️ Walk to the top or bottom edge of the map to reach the poles</li>
+          <li>🚙 <b>Goal:</b> launch research to Earth, build the rover, find Sam!</li>
+          <li>🧹 Clean the solar panels before bed AND after waking up</li>
+          <li>🖥️ <b>Computer:</b> the only way to talk to Earth</li>
+          <li>❄️🪨 <b>Explore!</b> Ice and rocks are far from base</li>
+          <li id="help-air">💨 <b>Air</b> runs down outside. Go back in the bubble</li>
+          <li>🛏️ <b>Sleep</b> in the evening, or you will faint</li>
+          <li>🔧 Machines take time to switch. Plan ahead!</li>
+        </ul>
+        <button id="btn-help-close" class="big">Got it!</button>
+      </div>
+    </div>
+
+    <!-- ===== Day change / fainting ===== -->
+    <div id="transition" class="hidden"></div>
+
+    <!-- ===== End screen ===== -->
+    <div id="end" class="screen hidden"></div>
+  </div>
+
+
+  <script src="data.js"></script>
+  <script src="engine.js"></script>
+  <script src="world.js"></script>
+  <script src="render.js"></script>
+  <script src="art.js"></script>
+  <script src="cinematic.js"></script>
+  <script src="ui.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
